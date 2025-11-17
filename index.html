@@ -6,27 +6,83 @@
   <title>我是元素週期表的哪個元素呢？｜中學生情境版 20 題測驗</title>
   
   <style>
-    :root{--bg:#0b1224;--panel:#111936;--soft:#0f1730;--text:#e7ecf7;--muted:#9db0d8;--accent:#68d391;--border:rgba(255,255,255,.08)}
+    :root{
+      --bg:#0b1224;
+      --panel:#111936;
+      --soft:#0f1730;
+      --text:#e7ecf7;
+      --muted:#9db0d8;
+      --accent:#68d391;
+      --border:rgba(255,255,255,.08)
+    }
     *{box-sizing:border-box}
-    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;background: linear-gradient(#ffffff, #ffd6e7);color:var(--text)}
+    /* 換成白色→粉紅漸層 + 深色文字 */
+    body{
+      margin:0;
+      font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;
+      background: linear-gradient(#ffffff, #ffd6e7);
+      color:#333;
+    }
     .wrap{max-width:900px;margin:0 auto;padding:24px}
-    .card{background:linear-gradient(180deg,var(--panel),var(--soft));border:1px solid var(--border);border-radius:16px;padding:20px}
+    /* 卡片維持深色風格，文字改用 var(--text) */
+    .card{
+      background:linear-gradient(180deg,var(--panel),var(--soft));
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:20px;
+      color:var(--text);
+    }
     h1{font-size:clamp(22px,3vw,30px);margin:0 0 6px}
     .sub{color:var(--muted);margin:0 0 16px}
-    .btn{appearance:none;border:0;border-radius:12px;padding:10px 16px;background:#6b7cff;color:#fff;font-weight:700;cursor:pointer}
+    .btn{
+      appearance:none;
+      border:0;
+      border-radius:12px;
+      padding:10px 16px;
+      background:#6b7cff;
+      color:#fff;
+      font-weight:700;
+      cursor:pointer
+    }
     .btn:disabled{opacity:.4;cursor:not-allowed}
     .btn-sec{background:transparent;border:1px solid var(--border);color:var(--text)}
-    .q{border:1px solid var(--border);border-radius:14px;padding:16px;background:rgba(255,255,255,.03)}
+    .q{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+      background:rgba(255,255,255,.03)
+    }
     .q h3{margin:0 0 10px;font-size:16px}
     .opt{display:flex;gap:10px;flex-direction:column}
-    .opt button{white-space:normal;text-align:left;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer}
+    .opt button{
+      white-space:normal;
+      text-align:left;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer
+    }
     .opt button:hover{background:rgba(255,255,255,.08)}
-    .progress{height:8px;background:#1c2847;border-radius:999px;overflow:hidden;border:1px solid var(--border)}
+    .progress{
+      height:8px;
+      background:#1c2847;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid var(--border)
+    }
     .bar{height:100%;background:var(--accent);width:0}
     .result{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
     .big{font-size:36px;font-weight:900}
     .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
     .muted{color:var(--muted)}
+    .footer{
+      margin:24px 0 8px;
+      text-align:center;
+      font-size:12px;
+      color:#666;
+    }
   </style>
 </head>
 <body>
@@ -34,7 +90,9 @@
     <header class="card" id="intro">
       <h1>我是元素週期表的哪個元素呢？</h1>
       
-      <div class="progress" aria-label="作答進度"><div class="bar" id="bar" style="width:0%"></div></div>
+      <div class="progress" aria-label="作答進度">
+        <div class="bar" id="bar" style="width:0%"></div>
+      </div>
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn" id="startBtn">開始作答</button>
       </div>
@@ -44,9 +102,10 @@
 
     <section id="result" style="display:none;margin-top:16px" class="card"></section>
   </div>
-<div class="footer">
+
+  <div class="footer">
     版權所有 © 2025 蕭妤真．未經授權請勿轉載或商用。
-</div>
+  </div>
 <script>
 // ===== 角色資料（每個元素約100字完整敘述） =====
 const ELEMENTS = {
