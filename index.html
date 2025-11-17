@@ -7,50 +7,65 @@
   
   <style>
     :root{
-      --bg:#0b1224;
-      --panel:#111936;
-      --soft:#0f1730;
-      --text:#e7ecf7;
-      --muted:#9db0d8;
-      --accent:#68d391;
-      --border:rgba(255,255,255,.08)
+      /* 古代宮廷暖色系 */
+      --bg:#fdf3e6;
+      --panel:#fff7ec;
+      --soft:#f6e0c5;
+      --text:#4a2b1a;
+      --muted:#a3785a;
+      --accent:#c45b3c;
+      --border:rgba(145,96,56,.25);
     }
     *{box-sizing:border-box}
-    /* 換成白色→粉紅漸層 + 深色文字 */
     body{
       margin:0;
       font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;
-      background: linear-gradient(#ffffff, #ffd6e7);
-      color:#333;
+      background:linear-gradient(180deg,#fdf7ef,#f5e0c8);
+      color:var(--text);
     }
-    .wrap{max-width:900px;margin:0 auto;padding:24px}
-    /* 卡片維持深色風格，文字改用 var(--text) */
+    .wrap{
+      max-width:900px;
+      margin:0 auto;
+      padding:24px 20px 32px;
+    }
     .card{
       background:linear-gradient(180deg,var(--panel),var(--soft));
       border:1px solid var(--border);
       border-radius:16px;
       padding:20px;
-      color:var(--text);
+      box-shadow:0 10px 30px rgba(120,72,40,.12);
     }
-    h1{font-size:clamp(22px,3vw,30px);margin:0 0 6px}
+    h1{
+      font-size:clamp(22px,3vw,30px);
+      margin:0 0 6px;
+    }
     .sub{color:var(--muted);margin:0 0 16px}
     .btn{
       appearance:none;
       border:0;
-      border-radius:12px;
-      padding:10px 16px;
-      background:#6b7cff;
+      border-radius:999px;
+      padding:10px 20px;
+      background:var(--accent);
       color:#fff;
       font-weight:700;
-      cursor:pointer
+      cursor:pointer;
+      letter-spacing:.05em;
     }
+    .btn:hover{background:#a3452b}
     .btn:disabled{opacity:.4;cursor:not-allowed}
-    .btn-sec{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .btn-sec{
+      background:transparent;
+      border:1px solid var(--border);
+      color:var(--text);
+    }
+    .btn-sec:hover{
+      background:rgba(255,255,255,.4);
+    }
     .q{
       border:1px solid var(--border);
       border-radius:14px;
-      padding:16px;
-      background:rgba(255,255,255,.03)
+      padding:16px 18px;
+      background:rgba(255,252,245,.8);
     }
     .q h3{margin:0 0 10px;font-size:16px}
     .opt{display:flex;gap:10px;flex-direction:column}
@@ -58,30 +73,52 @@
       white-space:normal;
       text-align:left;
       border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
+      background:rgba(255,250,243,.9);
       color:var(--text);
       padding:10px 12px;
       border-radius:12px;
-      cursor:pointer
+      cursor:pointer;
     }
-    .opt button:hover{background:rgba(255,255,255,.08)}
+    .opt button:hover{
+      background:rgba(244,214,181,.85);
+    }
     .progress{
       height:8px;
-      background:#1c2847;
+      background:#f0ddc5;
       border-radius:999px;
       overflow:hidden;
-      border:1px solid var(--border)
+      border:1px solid var(--border);
+      margin-top:10px;
     }
-    .bar{height:100%;background:var(--accent);width:0}
-    .result{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
-    .big{font-size:36px;font-weight:900}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .bar{
+      height:100%;
+      background:var(--accent);
+      width:0;
+      transition:width .25s ease-out;
+    }
+    .result{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:14px;
+      align-items:center;
+    }
+    .big{
+      font-size:36px;
+      font-weight:900;
+      color:#8b2c1c;
+    }
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
     .muted{color:var(--muted)}
     .footer{
-      margin:24px 0 8px;
       text-align:center;
       font-size:12px;
-      color:#666;
+      color:var(--muted);
+      margin:8px 0 18px;
     }
   </style>
 </head>
@@ -89,7 +126,6 @@
   <div class="wrap">
     <header class="card" id="intro">
       <h1>我是元素週期表的哪個元素呢？</h1>
-      
       <div class="progress" aria-label="作答進度">
         <div class="bar" id="bar" style="width:0%"></div>
       </div>
@@ -102,7 +138,6 @@
 
     <section id="result" style="display:none;margin-top:16px" class="card"></section>
   </div>
-
   <div class="footer">
     版權所有 © 2025 蕭妤真．未經授權請勿轉載或商用。
   </div>
