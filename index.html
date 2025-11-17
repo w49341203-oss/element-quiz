@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>我是元素週期表的哪個元素呢？｜中學生情境版 20 題測驗</title>
+  <meta name="description" content="用中學生生活情境做的 20 題元素人格測驗，完成後告訴你最像哪一個元素角色。每個選項對應多個元素並且交錯重疊，確保20題就能拉開分數差距。" />
+  <style>
+    :root{--bg:#0b1224;--panel:#111936;--soft:#0f1730;--text:#e7ecf7;--muted:#9db0d8;--accent:#68d391;--border:rgba(255,255,255,.08)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;background:linear-gradient(180deg,var(--bg),#060b1b);color:var(--text)}
+    .wrap{max-width:900px;margin:0 auto;padding:24px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--soft));border:1px solid var(--border);border-radius:16px;padding:20px}
+    h1{font-size:clamp(22px,3vw,30px);margin:0 0 6px}
+    .sub{color:var(--muted);margin:0 0 16px}
+    .btn{appearance:none;border:0;border-radius:12px;padding:10px 16px;background:#6b7cff;color:#fff;font-weight:700;cursor:pointer}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn-sec{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .q{border:1px solid var(--border);border-radius:14px;padding:16px;background:rgba(255,255,255,.03)}
+    .q h3{margin:0 0 10px;font-size:16px}
+    .opt{display:flex;gap:10px;flex-direction:column}
+    .opt button{white-space:normal;text-align:left;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer}
+    .opt button:hover{background:rgba(255,255,255,.08)}
+    .progress{height:8px;background:#1c2847;border-radius:999px;overflow:hidden;border:1px solid var(--border)}
+    .bar{height:100%;background:var(--accent);width:0}
+    .result{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+    .big{font-size:36px;font-weight:900}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .muted{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="card" id="intro">
+      <h1>我是元素週期表的哪個元素呢？</h1>
+      <p class="sub">中學生生活情境 × 20 題選擇題。每個選項同時「加權」多個元素，交錯重疊計分，20題就能精準分出你的元素人格。</p>
+      <div class="progress" aria-label="作答進度"><div class="bar" id="bar" style="width:0%"></div></div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="startBtn">開始作答</button>
+      </div>
+    </header>
+
+    <main id="quiz" style="margin-top:16px"></main>
+
+    <section id="result" style="display:none;margin-top:16px" class="card"></section>
+  </div>
+
+<script>
+// ===== 角色資料（每個元素約100字完整敘述） =====
+const ELEMENTS = {
+  H:{name:'氫 H｜夢想家', blurb:'總是第一個行動的人，腦袋裡充滿新點子與無限想像，像宇宙開端的火花。熱情而單純，喜歡帶動他人一起開始新計畫，也容易因為太快燃燒而疲憊。當他能學會在興奮與穩定間找到節奏時，就能讓創意長久發光。'},
+  He:{name:'氦 He｜治癒者', blurb:'溫柔、輕盈、懂得照顧他人情緒的存在。像是人群中的氣球，總能讓氣氛變得柔和。喜歡用幽默緩解緊張，擅長讓大家放鬆。雖然偶爾顯得飄忽，但那份溫暖是最難得的平衡力量。'},
+  N:{name:'氮 N｜觀察者', blurb:'沉靜、聰明、喜歡分析背後邏輯。即使不多話，也能一針見血地看出關鍵。當別人浮躁時，他像一層穩定的保護膜，讓團隊冷靜下來。雖有距離感，但內在充滿深度與理性美。'},
+  O:{name:'氧 O｜行動家', blurb:'充滿能量與熱情，喜歡帶動氣氛、實際行動。沒有他就像世界少了火焰。樂於助人，看到他人需要會立刻行動。雖然有時太忙於拯救別人，但那份熱度就是他存在的意義。'},
+  C:{name:'碳 C｜穩定者', blurb:'務實、可靠，是結構的骨架與團隊的支柱。能靈活連結不同的人與觀點，讓混亂變得有秩序。看似普通卻最不可或缺，他用穩定構築安全感，也用平靜累積長遠的力量。'},
+  P:{name:'磷 P｜靈光型', blurb:'靈感閃現型天才，總在意想不到的時刻提出驚人點子。喜歡新鮮感與挑戰，厭倦一成不變。當能找到舞台發揮創意時會閃閃發光，但若被束縛太久，就會陷入倦怠與分心。'},
+  S:{name:'硫 S｜誠實派', blurb:'有原則、有底線，討厭虛假。說話直接、實事求是。雖然有時太直讓人壓力大，但他是那個在風暴中仍會說真話的人。內心柔軟，只是不善於表達關懷。'},
+  F:{name:'氟 F｜挑戰者', blurb:'聰明、銳利、具批判力，永遠走在改變前端。敢於指出問題並推翻舊規則。雖然容易讓人感到有壓力，但他那份突破的勇氣，是推動世界前進的力量。'},
+  Cl:{name:'氯 Cl｜平衡者', blurb:'冷靜外殼下藏著極高的共感力。擅長協調與中和，是人際關係裡的穩定劑。當氣氛緊張時，他用理智維持和諧。看似被動，實則在默默調整整個場域的溫度。'},
+  I:{name:'碘 I｜神秘者', blurb:'直覺敏銳，常能預感到別人還沒說出口的事。喜歡探索未知、觀察人心。雖然行事低調，但存在感極強。當他願意開口時，往往帶著一種洞悉真相的力量。'},
+  Li:{name:'鋰 Li｜樂觀派', blurb:'反應快、轉念也快，腦袋像彈簧一樣靈活。擅長把無聊變有趣、把困難變成挑戰。偶爾三分鐘熱度，但當他找到熱愛的事時，進步速度驚人。'},
+  Na:{name:'鈉 Na｜交際王', blurb:'外向熱情，擅長與人連結。像鹽一樣讓關係變得有味道。樂觀開朗，容易感染他人好心情，也容易情緒過度投入。懂得調節時，是最棒的社交推手。'},
+  K:{name:'鉀 K｜照顧者', blurb:'溫柔體貼，對他人情緒非常敏感。總是第一個發現誰心情不好。喜歡幫忙、傾聽與安撫，是團隊裡的暖心存在。有時會忽略自己，但他人因此感到被愛與被看見。'},
+  Ca:{name:'鈣 Ca｜守護者', blurb:'重視安全與秩序，穩健踏實。會默默把事情做好，讓大家有安全感。雖然不愛變化，但面對責任從不退縮。他像一堵牆，讓人能放心倚靠。'},
+  Mg:{name:'鎂 Mg｜靈活型', blurb:'動手派、抗壓派，越緊張越能爆發實作力。喜歡邊做邊修、快速試錯。雖然有時耐心不足，但效率滿點。'},
+  Al:{name:'鋁 Al｜創新者', blurb:'熱愛新工具、新方法，勇於試錯、快速疊代。擅長把複雜的東西做成人人可用的版本。偶爾太急，但正是這股速度帶來改變。'},
+  Fe:{name:'鐵 Fe｜責任者', blurb:'自律、堅定，是團隊的支柱。做事講原則、有組織，能在混亂中保持冷靜。雖然不多話，但會用行動證明可靠。當他說「交給我」，事情就會被妥善完成。'},
+  Cu:{name:'銅 Cu｜溝通者', blurb:'懂得傾聽與傳達，總能讓不同立場的人找到共鳴。樂觀開朗，喜歡交流。偶爾話多，但那份真誠讓人無法抗拒。他是讓氣氛流動、讓人連結的導體。'},
+  Zn:{name:'鋅 Zn｜修復者', blurb:'穩重、耐心、充滿療癒力。會主動照顧他人的情緒與狀態，修補裂痕。當他出現時，氣氛自然安定下來。雖然不愛出風頭，但缺他不行。'},
+  Ag:{name:'銀 Ag｜理想紳士', blurb:'優雅、細膩、有品味，重視細節與和諧。喜歡讓周圍的人感受到美感與秩序。雖然有時顯得挑剔，但他只是在追求完美的平衡點。'},
+  Au:{name:'金 Au｜完美主義者', blurb:'光芒萬丈、領導氣質強。對自己要求極高，追求極致與榮耀。擅長掌控全局，但也容易壓力過大。當他能接受「不完美也是閃光的一部分」時，就能真正自在。'},
+  Pb:{name:'鉛 Pb｜沉思者', blurb:'步調緩、內心深，喜歡在安靜中累積力量。行動前會先觀察與思考，出手往往一擊必中。雖然外表慢熱，心裡有自己的節奏與堅持。'},
+  Sn:{name:'錫 Sn｜協調型', blurb:'和平主義者，擅長成為人際之間的潤滑劑。重視彼此界線也重視合作成果。看似溫順，關鍵時刻能穩住全場。'},
+  Cr:{name:'鉻 Cr｜自信派', blurb:'有舞台感與表現慾，壓力越大越閃耀。喜歡挑戰極限，也愛被認可。雖然偶爾太在意外界眼光，但他的勇氣與行動力常成為他人的榜樣。'},
+  Mn:{name:'錳 Mn｜潛力股', blurb:'平時低調，關鍵時刻會突然爆發實力。喜歡在幕後累積能力，不急著表現。當機會來臨時，往往讓人驚艷。'},
+  Ni:{name:'鎳 Ni｜持久型', blurb:'沉穩內斂，抗壓性強。做事不急不徐，能長時間專注完成任務。雖然存在感不高，但他是讓整個系統穩定運作的關鍵齒輪。'},
+  Co:{name:'鈷 Co｜冒險者', blurb:'熱血衝動、愛挑戰、愛探索新事物。喜歡自由與速度，不怕改變。容易衝動，但那份勇氣常帶來驚喜與突破。'},
+  Hg:{name:'汞 Hg｜變化型', blurb:'靈敏多變，像液體一樣能適應不同環境。創意十足，想法跳躍。雖然難以被定義，但他的流動性正是能連接世界的橋樑。'},
+  Ba:{name:'鋇 Ba｜戲劇型', blurb:'存在感強、情感豐富。擅長表達、愛被看見。雖然有時情緒起伏大，但正是這樣讓他能觸動人心。'},
+  Sr:{name:'鍶 Sr｜浪漫派', blurb:'柔和、感性，重視情感共鳴與美感。喜歡創造溫暖氛圍。雖然容易感傷，但他總能讓世界變得柔軟。'},
+  Si:{name:'矽 Si｜工程師', blurb:'理性、有條理，擅長把混亂變成秩序。喜歡規劃、整理與改善流程。雖然有點固執，但正因如此，系統才能穩定。'},
+  Sb:{name:'銻 Sb｜策略家', blurb:'冷靜、聰明、擅長佈局。習慣先觀察全局再出手，精準預判後續走向。雖然給人距離感，但內心充滿策略與洞見。'},
+  U:{name:'鈾 U｜命定者', blurb:'能量龐大、氣場強烈。總在關鍵時刻改變局勢。雖然讓人敬畏，但當他學會節制力量時，會成為推動世界的關鍵。'},
+  Ne:{name:'氖 Ne｜孤高者', blurb:'閃耀卻安靜，不喜歡喧嚣。做事有自己節奏，極度自我要求。雖然常被誤解冷淡，但他只是在守護自己的純粹。'},
+  Ar:{name:'氬 Ar｜觀察者', blurb:'安靜旁觀、理性克制。總能一語中的、點出盲點。雖然話少，但每次開口都很有份量。'},
+  Br:{name:'溴 Br｜矛盾型', blurb:'感性與理性交錯，內心豐富卻難以平衡。時而熱情、時而退縮，像情緒的潮汐。當他學會接納自己所有的面向時，就會成為最深刻的靈魂。'}
+};
+
+// ===== 題庫（20 題 × 4 選；每選項加權多元素） =====
+const Q = [
+  { q:'分組做海報，你自然會選？',
+    opts:[
+      {t:'發想主題、畫流程圖開場。', w:{H:2,P:1,Al:1}},
+      {t:'觀察大家節奏，補缺的那個。', w:{C:2,Zn:1,Cl:1}},
+      {t:'立刻開工剪貼排版，邊做邊修。', w:{Al:2,O:1,Mg:1}},
+      {t:'負責收尾統整，讓版面乾淨一致。', w:{Ag:2,Fe:1,Ni:1}},
+    ]},
+  { q:'考前 3 天，你的讀書策略？',
+    opts:[
+      {t:'做自製重點卡＋畫心智圖。', w:{P:2,H:1,Ne:1}},
+      {t:'把老師的講義重整成 SOP。', w:{Si:2,N:1,C:1}},
+      {t:'找同學互考、互補盲點。', w:{Cu:2,Na:1,Cl:1}},
+      {t:'先把不會的題目列清單逐一擊破。', w:{Fe:2,Sb:1,Ni:1}},
+    ]},
+  { q:'教室換座位，你最在意？',
+    opts:[
+      {t:'窗邊靈感多、視野好。', w:{Ne:2,P:1,I:1}},
+      {t:'靠近走道，方便幫忙傳遞。', w:{Na:2,K:1,Cu:1}},
+      {t:'中間區域，觀察整體最清楚。', w:{N:2,Ar:1,Si:1}},
+      {t:'任何位置都行，但要穩定固定。', w:{Ni:2,Ca:1,C:1}},
+    ]},
+  { q:'社團招新，你會選：',
+    opts:[
+      {t:'創客/科學探究，動手做超過癮。', w:{Mg:2,Al:1,Cr:1}},
+      {t:'服務性社團，陪伴與助人最有成就。', w:{Zn:2,He:1,K:1}},
+      {t:'戲劇/熱舞，舞台感是我的能量來源。', w:{Ba:2,Au:1,Cr:1}},
+      {t:'辯論/模聯，邏輯與策略是我的菜。', w:{Sb:2,N:1,Cl:1}},
+    ]},
+  { q:'實驗失敗 3 次，下一步？',
+    opts:[
+      {t:'換個思路重設假說，再試！', w:{Cr:2,H:1,Al:1}},
+      {t:'冷靜檢查每個步驟，找誤差源。', w:{Si:2,N:1,Fe:1}},
+      {t:'拉同伴一起，分工加速排除問題。', w:{O:2,Na:1,Cu:1}},
+      {t:'先記錄下失敗原因，等腦袋冷卻再來。', w:{Pb:2,C:1,Ni:1}},
+    ]},
+  { q:'同學吵起來了，你會：',
+    opts:[
+      {t:'幫忙翻譯彼此意思，降溫。', w:{Cl:2,Sn:1,Cu:1}},
+      {t:'直接指出問題點，要大家面對。', w:{F:2,Cr:1,O:1}},
+      {t:'先把兩人拉開，約時間再談。', w:{Sn:2,K:1,He:1}},
+      {t:'默默陪在旁邊，讓情緒先過去。', w:{He:2,S:1,Sr:1}},
+    ]},
+  { q:'校慶表演你最想負責：',
+    opts:[
+      {t:'總企劃：主題、橋段、節奏。', w:{Au:2,Sb:1,Cr:1}},
+      {t:'舞台執行：燈光道具與走位。', w:{Fe:2,Ag:1,Si:1}},
+      {t:'社群宣傳：文案、短片、互動。', w:{Cu:2,Na:1,Ba:1}},
+      {t:'美術視覺：海報、服裝風格。', w:{I:2,Ag:1,Ne:1}},
+    ]},
+  { q:'導師臨時改行程，你的反應：',
+    opts:[
+      {t:'好耶！變化讓我超有活力。', w:{Hg:2,Li:1,Co:1}},
+      {t:'先看整體影響，快速重排。', w:{Si:2,Sb:1,N:1}},
+      {t:'確認大家是否OK，再出發。', w:{K:2,Cl:1,Cu:1}},
+      {t:'希望下次提前說，我需要穩定。', w:{Ca:2,C:1,Ni:1}},
+    ]},
+  { q:'打掃時間結束前 5 分鐘：',
+    opts:[
+      {t:'收尾控：把工具歸位最重要。', w:{Fe:2,C:1,Sn:1}},
+      {t:'快手隊：哪裡髒我就衝去處理。', w:{O:2,Cr:1,Mg:1}},
+      {t:'分配王：分人、分區一口氣完成。', w:{Na:2,Sb:1,Cl:1}},
+      {t:'細節派：角落、縫隙要乾淨。', w:{Ag:2,Zn:1,Pb:1}},
+    ]},
+  { q:'面對嚴格的班規：',
+    opts:[
+      {t:'如果更有效率，我會提修正案。', w:{Cr:2,F:1,Al:1}},
+      {t:'理解制度精神，先照做再優化。', w:{C:2,Fe:1,Si:1}},
+      {t:'遵守底線，但希望保留彈性。', w:{Cl:2,Na:1,S:1}},
+      {t:'我能守住規範，安定大家節奏。', w:{Ca:2,Ni:1,Sn:1}},
+    ]},
+  { q:'看到一個超新奇的學習 APP：',
+    opts:[
+      {t:'立刻試玩，寫心得分享同學。', w:{Al:2,Li:1,Ne:1}},
+      {t:'研究功能，想怎麼整合到讀書流程。', w:{Si:2,N:1,Sb:1}},
+      {t:'揪朋友一起，比較舊方法與新方法。', w:{Cu:2,Na:1,Cl:1}},
+      {t:'先觀望一陣子，穩定再說。', w:{Ni:2,Pb:1,Ca:1}},
+    ]},
+  { q:'好友心情低落，你會：',
+    opts:[
+      {t:'安靜陪他走走，問需要什麼。', w:{He:2,K:1,Zn:1}},
+      {t:'安排一場小行程，轉移注意力。', w:{Sr:2,Na:1,Cu:1}},
+      {t:'直接拆解問題，陪他做計畫。', w:{N:2,Sb:1,C:1}},
+      {t:'準備手寫卡片與小禮物。', w:{K:2,Ag:1,S:1}},
+    ]},
+  { q:'舞台上你最像的角色：',
+    opts:[
+      {t:'拿麥主唱／主角，享受聚光燈。', w:{Ba:2,Au:1,Cr:1}},
+      {t:'音控燈控，讓每個橋段更到位。', w:{Zn:2,Ag:1,Si:1}},
+      {t:'導演／總召，抓節奏與品質。', w:{Au:2,Fe:1,Sb:1}},
+      {t:'編劇／設計，打造世界觀與美感。', w:{I:2,Ne:1,P:1}},
+    ]},
+  { q:'校外教學行前準備：',
+    opts:[
+      {t:'做一份酷炫的小型導覽地圖。', w:{P:2,Al:1,Ne:1}},
+      {t:'查交通與時程，列出注意事項。', w:{Si:2,C:1,N:1}},
+      {t:'安排分組任務，確保每人有事做。', w:{Na:2,Cl:1,Cu:1}},
+      {t:'預備 B 計畫：下雨或延誤怎麼辦。', w:{Sb:2,Pb:1,Ni:1}},
+    ]},
+  { q:'老師徵志工：搬器材、拍攝、主持、記錄。',
+    opts:[
+      {t:'我搬！需要體力與可靠度的交給我。', w:{Fe:2,Ca:1,C:1}},
+      {t:'我拍！畫面與現場感我來抓。', w:{Ag:2,Ba:1,I:1}},
+      {t:'我主持！把大家情緒帶起來。', w:{O:2,Na:1,Au:1}},
+      {t:'我記錄！之後會出一份懶人包。', w:{C:2,N:1,Si:1}},
+    ]},
+  { q:'操場撿到手機，你的流程：',
+    opts:[
+      {t:'先關心失主心情，再協助找人。', w:{K:2,He:1,Zn:1}},
+      {t:'交到教官室並留下時間地點紀錄。', w:{Sn:2,Fe:1,C:1}},
+      {t:'試著用公告或群組擴散訊息找主人。', w:{Na:2,Cu:1,Cl:1}},
+      {t:'觀察是否有人可疑，避免爭議。', w:{Ar:2,N:1,Sb:1}},
+    ]},
+  { q:'班上出現不實謠言：',
+    opts:[
+      {t:'蒐證釐清，寫成澄清帖。', w:{N:2,Si:1,Sb:1}},
+      {t:'找當事人談，協調共同聲明。', w:{Cl:2,Cu:1,Sn:1}},
+      {t:'直接在班會上對質澄清。', w:{F:2,Cr:1,O:1}},
+      {t:'先安撫受傷的人，再逐步公開說明。', w:{He:2,K:1,Zn:1}},
+    ]},
+  { q:'報告明天截止，你今天晚上會：',
+    opts:[
+      {t:'先做出一版雛形，邊做邊補。', w:{Al:2,Mg:1,O:1}},
+      {t:'把大綱寫到很清楚再動工。', w:{Si:2,C:1,N:1}},
+      {t:'開小組會議快速分工。', w:{O:2,Na:1,Cu:1}},
+      {t:'把品質守住，做到最穩。', w:{Fe:2,Ni:1,Ag:1}},
+    ]},
+  { q:'體育課分隊：',
+    opts:[
+      {t:'我想當前鋒，衝一波。', w:{Co:2,Li:1,Cr:1}},
+      {t:'我守後場，保穩。', w:{Ca:2,Ni:1,Fe:1}},
+      {t:'我當隊長，調度大家。', w:{Au:2,Sb:1,Na:1}},
+      {t:'我觀察對方戰術，找破口。', w:{Sb:2,N:1,Ar:1}},
+    ]},
+  { q:'中午要吃什麼：',
+    opts:[
+      {t:'想試新開的那家，走！', w:{Hg:2,Co:1,Li:1}},
+      {t:'吃老地方，最快最穩。', w:{Ni:2,Ca:1,C:1}},
+      {t:'看大家想吃什麼，我都配合。', w:{Zn:2,K:1,Na:1}},
+      {t:'我提三個選項，投票決定。', w:{Cl:2,Cu:1,Sb:1}},
+    ]},
+];
+
+// ===== 狀態與計分 =====
+let cur = 0;                 // 第幾題
+const score = {};            // { elementSymbol: number }
+
+const startBtn = document.getElementById('startBtn');
+const quizEl = document.getElementById('quiz');
+const barEl = document.getElementById('bar');
+const resultEl = document.getElementById('result');
+
+startBtn.addEventListener('click', startQuiz);
+
+document.addEventListener('keydown', (e)=>{
+  // 小捷徑：數字1~4作答
+  const n = Number(e.key);
+  if(n>=1 && n<=4 && cur < Q.length){ pick(n-1); }
+});
+
+function startQuiz(){
+  cur=0; for(const k in score) delete score[k];
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const total = Q.length;
+  barEl.style.width = Math.round((cur/total)*100)+'%';
+  resultEl.style.display='none';
+
+  if(cur>=total){ showResult(); return; }
+  const q = Q[cur];
+  quizEl.innerHTML = `
+    <div class="card q">
+      <h3>Q${cur+1}. ${q.q}</h3>
+      <div class="opt">
+        ${q.opts.map((o,idx)=>`<button data-idx="${idx}">${o.t}</button>`).join('')}
+      </div>
+      <div style="margin-top:10px" class="muted">${cur+1} / ${total}（也可按鍵 1–4 快速作答）</div>
+    </div>`;
+  quizEl.querySelectorAll('button[data-idx]').forEach(btn=>{
+    btn.addEventListener('click',()=>pick(Number(btn.dataset.idx)));
+  });
+}
+
+function pick(idx){
+  const o = Q[cur].opts[idx];
+  for(const k in o.w){ score[k] = (score[k]||0) + o.w[k]; }
+  cur++; renderQuestion();
+}
+
+function showResult(){
+  barEl.style.width = '100%';
+  quizEl.innerHTML = '';
+  resultEl.style.display = '';
+
+  const ranking = Object.entries(score).sort((a,b)=>b[1]-a[1]);
+  if(ranking.length===0){ resultEl.innerHTML='<div>尚未作答，請點「開始作答」。</div>'; return; }
+  const [topKey] = ranking[0];
+  const meta = ELEMENTS[topKey] || {name: topKey, blurb:''};
+
+  resultEl.innerHTML = `
+    <div class="result">
+      <div class="big">${topKey}</div>
+      <div>
+        <div style="font-weight:800">${meta.name}</div>
+        <div class="muted" style="margin-top:6px">${meta.blurb}</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-sec" id="again">再測一次</button>
+      <button class="btn" id="share">複製分享文案</button>
+    </div>`;
+  document.getElementById('again').addEventListener('click', restart);
+  document.getElementById('share').addEventListener('click', ()=>copyShare(topKey));
+}
+
+function restart(){ cur=0; for(const k in score) delete score[k]; barEl.style.width='0%'; renderQuestion(); }
+
+function copyShare(sym){
+  const meta = ELEMENTS[sym] || {name:sym};
+  const text = `我在「元素人格」中測出【${meta.name}】！你最像哪個元素？一起測：`+location.href;
+  navigator.clipboard.writeText(text).then(()=>alert('已複製，快去分享！'));
+}
+</script>
+</body>
+</html>
